@@ -36,7 +36,7 @@ def CreatePost(c, connection, c_id, db_conn, db_cur, argv):
         else:
             title = ' '.join(argv[t_idx+1:])
             content = ' '.join(argv[c_idx+1:t_idx]).replace('<br>','\n')
-
+        
         try:
             db_cur.execute(f'''
                 insert into post (bname, title, author, content) 
@@ -45,7 +45,7 @@ def CreatePost(c, connection, c_id, db_conn, db_cur, argv):
             db_conn.commit()
             msg = 'Create post successfully.\n'
         except sqlite3.IntegrityError:
-            msg = 'Board is not exist.\n'
+            msg = 'Board does not exist.\n'
     c.sendall(msg.encode('utf-8'))
 
 def ListBoard(c, db_cur, argv):
@@ -72,7 +72,7 @@ def ListPost(c, db_cur, argv):
         db_cur.execute(f'select count(*) from board where bname="{argv[0]}"')
         cnt = db_cur.fetchone()[0]
         if cnt==0:
-            msg = 'Board is not exist.\n'
+            msg = 'Board does not exist.\n'
         else:
             if len(argv) == 1:
                 db_cur.execute(f'''
@@ -108,7 +108,7 @@ def Read(c, db_cur, argv):
         ''')
         res = db_cur.fetchone()
         if res is None:
-            msg = 'Post is not exist.\n'
+            msg = 'Post does not exist.\n'
         else:
             msg = f"Author\t:{res[0]}\nTitle\t:{res[1]}\nDate\t:{res[2].split(' ')[0]}\n--\n{res[3]}\n--\n"
             db_cur.execute(f'''
@@ -136,7 +136,7 @@ def DeletePost(c, connection, c_id, db_conn, db_cur, argv):
         ''')
         author = db_cur.fetchone()
         if author is None:
-            msg = 'Post is not exist.\n'
+            msg = 'Post does not exist.\n'
         elif author[0] != connection.get_uname(c_id):
             msg = 'Not the post owner.\n'
         else:
@@ -163,7 +163,7 @@ def UpdatePost(c, connection, c_id, db_conn, db_cur, argv):
             ''')
             author = db_cur.fetchone()
             if author is None:
-                msg = 'Post is not exist.\n'
+                msg = 'Post does not exist.\n'
             elif author[0] != connection.get_uname(c_id):
                 msg = 'Not the post owner.\n'
             else:
@@ -172,6 +172,7 @@ def UpdatePost(c, connection, c_id, db_conn, db_cur, argv):
                     set {update_type} = "{new_content}"
                     where pid={argv[0]}
                 ''')
+                db_conn.commit()
                 msg = 'Update successfully.\n'
         else:
             msg = 'update-post <post-id> --title/content <new>\n'
@@ -192,7 +193,7 @@ def Comment(c, connection, c_id, db_conn, db_cur, argv):
         ''')
         cnt = db_cur.fetchone()[0]
         if cnt == 0:
-            msg = 'Post is not exist.\n'
+            msg = 'Post does not exist.\n'
         else:
             uname = connection.get_uname(c_id)
             content = ' '.join(argv[1:])
