@@ -1,4 +1,5 @@
 import sqlite3
+import utils
 
 def CreateBoard(c, connection, c_id, db_conn, db_cur, argv):
     if len(argv) != 1:
@@ -28,8 +29,14 @@ def CreatePost(c, connection, c_id, db_conn, db_cur, argv):
         bname = argv[0]
         uname = connection.get_uname(c_id)
 
-        t_idx = argv.index('--title')
-        c_idx = argv.index('--content')
+        try:
+            t_idx = argv.index('--title')
+            c_idx = argv.index('--content')
+        except:
+            msg = 'create-post <board-name> --title <title> --content <content>\n'
+            c.sendall(msg.encode('utf-8'))
+            return
+
         if t_idx < c_idx:
             title = ' '.join(argv[t_idx+1:c_idx])
             content = ' '.join(argv[c_idx+1:]).replace('<br>','\n')
@@ -100,7 +107,12 @@ def Read(c, db_cur, argv):
     if len(argv) != 1:
         msg = 'read <post-id>\n'
     else:
-        pid = argv[0]
+        pid = utils.check_pid(argv[0])
+        if not pid:
+            msg = 'Post does not exist.\n'
+            c.sendall(msg.encode('utf-8'))
+            return
+
         db_cur.execute(f'''
             select author, title, date_time, content
             from post
@@ -129,6 +141,12 @@ def DeletePost(c, connection, c_id, db_conn, db_cur, argv):
     elif not connection.check_login(c_id):
         msg = 'Please login first.\n'
     else:
+        pid = utils.check_pid(argv[0])
+        if not pid:
+            msg = 'Post does not exist.\n'
+            c.sendall(msg.encode('utf-8'))
+            return
+
         db_cur.execute(f'''
             select author
             from post
@@ -151,7 +169,12 @@ def UpdatePost(c, connection, c_id, db_conn, db_cur, argv):
     elif not connection.check_login(c_id):
         msg = 'Please login first.\n'
     else:
-        pid = argv[0]
+        pid = utils.check_pid(argv[0])
+        if not pid:
+            msg = 'Post does not exist.\n'
+            c.sendall(msg.encode('utf-8'))
+            return
+
         if argv[1] == '--title' or argv[1] == '--content':
             update_type = argv[1][2:]
             new_content = ' '.join(argv[2:]).replace('<br>','\n')
@@ -185,7 +208,12 @@ def Comment(c, connection, c_id, db_conn, db_cur, argv):
     elif not connection.check_login(c_id):
         msg = 'Please login first.\n'
     else:
-        pid = argv[0]
+        pid = utils.check_pid(argv[0])
+        if not pid:
+            msg = 'Post does not exist.\n'
+            c.sendall(msg.encode('utf-8'))
+            return
+
         db_cur.execute(f'''
             select count(*)
             from post

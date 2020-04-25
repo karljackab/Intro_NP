@@ -6,6 +6,12 @@ def send_prompt(c):
     msg = '% '
     c.sendall(msg.encode('utf-8'))
 
+def check_pid(pid):
+    try:
+        pid = int(pid)
+    except:
+        pid = False
+    return pid
 
 class Connection():
     def __init__(self):
@@ -25,10 +31,13 @@ class Connection():
     def get(self, c_id):
         return self.connection_list[c_id]['connection'], self.connection_list[c_id]['address']
     
-    def remove(self, c_id):
+    def remove(self, c_id, db_conn):
         self.connection_list[c_id]['connection'].close()
         print('Connection leaved.')
         del self.connection_list[c_id]
+
+        if db_conn:
+            db_conn.close()
     
     def login(self, c_id, uname):
         self.connection_list[c_id]['has_log_in'] = True

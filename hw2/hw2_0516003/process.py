@@ -24,11 +24,11 @@ def main(connection, c_id):
 
     while True:
         utils.send_prompt(c)
-        buf = c.recv(1024)
+        buf = c.recv(2048)
         try:
             buf = buf.decode('utf-8').strip().split(' ')
         except:
-            connection.remove(c_id)
+            connection.remove(c_id, db_conn)
             break
         
         if buf[0] == 'register':
@@ -52,7 +52,7 @@ def main(connection, c_id):
                 msg = 'exit\n'
                 c.sendall(msg.encode('utf-8'))
             else:
-                connection.remove(c_id)
+                connection.remove(c_id, db_conn)
                 break
         elif buf[0] == 'create-board':
             bpf.CreateBoard(c, connection, c_id, db_conn, db_cur, buf[1:])
