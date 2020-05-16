@@ -223,13 +223,16 @@ def Comment(c, connection, c_id, db_conn, db_cur, argv):
         if cnt == 0:
             msg = 'Post does not exist.\n'
         else:
-            uname = connection.get_uname(c_id)
-            content = ' '.join(argv[1:])
+            try:
+                uname = connection.get_uname(c_id)
+                content = ' '.join(argv[1:])
 
-            db_cur.execute(f'''
-                insert into comment (author, content, pid)
-                values ("{uname}", "{content}", "{pid}")
-            ''')
-            db_conn.commit()
-            msg = 'Comment successfully.\n'
+                db_cur.execute(f'''
+                    insert into comment (author, content, pid)
+                    values ("{uname}", "{content}", "{pid}")
+                ''')
+                db_conn.commit()
+                msg = 'Comment successfully.\n'
+            except:
+                msg = 'Post does not exist.\n'
     c.sendall(msg.encode('utf-8'))

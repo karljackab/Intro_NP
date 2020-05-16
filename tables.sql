@@ -1,5 +1,6 @@
 create table user(
     uname varchar(50) primary key not null,
+    bucket_name varchar(50) not null,
     email varchar(70),
     pwd varhcar(50) not null
 );
